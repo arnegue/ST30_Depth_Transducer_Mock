@@ -51,6 +51,7 @@ void setup() {
 
   pinMode(pin_pulseIn, INPUT);
   pinMode(pin_echoOut, OUTPUT);
+  digitalWrite(pin_echoOut, LOW);
   attachInterrupt(digitalPinToInterrupt(pin_pulseIn), echoISR, RISING);
 
   lcd.blink();
