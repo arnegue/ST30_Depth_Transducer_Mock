@@ -18,17 +18,18 @@ const int pin_d6 = 6;
 const int pin_d7 = 7;
 LiquidCrystal lcd(pin_RS, pin_EN, pin_d4, pin_d5, pin_d6, pin_d7);
 
-// Depth selection and display
-uint8_t currentDepth = 0;
-int8_t selectedRelDepth = 0;
-
-uint32_t calculatedDepthDelay = 0;
-
-const uint32_t METER_TO_DELAY = 1333;              // Rough estimate
-const uint32_t CORRECTION = 0.7 * METER_TO_DELAY;  // Some calibration (maybe to to some electronics delay and/or slow arduino[libraries])
 // Pins to ST30
 const int pin_pulseIn = 2;  // InPin, triggers an interrupt when ST30 generates a pulse to transducer
 const int pin_echoOut = 3;  // OutPin, Toggles high to emulate echo of pulse
+
+// Depth selection and display
+uint8_t currentDepth = 0;     // Selected depth from user
+int8_t selectedRelDepth = 0;  // TODO needed as global variable?
+
+// Delay calculation
+uint32_t calculatedDepthDelay = 0;                 // Wait time in microseconds
+const uint32_t METER_TO_DELAY = 1333;              // Rough estimate in microseconds
+const uint32_t CORRECTION = 0.7 * METER_TO_DELAY;  // Some calibration (maybe to to some electronics delay and/or slow arduino[libraries])
 
 // Print depth to LCD
 void printDepth() {
