@@ -24,7 +24,7 @@ const int pin_echoOut = 3;  // OutPin, Toggles high to emulate echo of pulse
 
 // Depth selection and display
 uint8_t currentDepth = 0;     // Selected depth from user
-int8_t selectedRelDepth = 0;  // TODO needed as global variable?
+int8_t selectedRelDepth = 0;  // Previously selected depth (needs to be outside of loop scope)
 
 // Delay calculation
 uint32_t calculatedDepthDelay = 0;                 // Wait time in microseconds
