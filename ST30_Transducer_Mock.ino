@@ -7,6 +7,8 @@
 #define LEFT_BUTTON_VAL 600
 #define SELECT_BUTTON_VAL 800
 
+#define ARDUINO_MICROSECONDS_DELAY_MAX (0x4000 - 1)  // 14 bit
+
 // LCD pin to Arduino
 const int pin_RS = 8;
 const int pin_EN = 9;
@@ -19,10 +21,11 @@ LiquidCrystal lcd(pin_RS, pin_EN, pin_d4, pin_d5, pin_d6, pin_d7);
 // Depth selection and display
 uint8_t currentDepth = 0;
 int8_t selectedRelDepth = 0;
-unsigned int calculatedDepthDelay = 0;
 
-const unsigned int METER_TO_DELAY = 1333;              // Rough estimate
-const unsigned int CORRECTION = 0.7 * METER_TO_DELAY;  // Some calibration (maybe to to some electronics delay and/or slow arduino[libraries])
+uint32_t calculatedDepthDelay = 0;
+
+const uint32_t METER_TO_DELAY = 1333;              // Rough estimate
+const uint32_t CORRECTION = 0.7 * METER_TO_DELAY;  // Some calibration (maybe to to some electronics delay and/or slow arduino[libraries])
 // Pins to ST30
 const int pin_pulseIn = 2;  // InPin, triggers an interrupt when ST30 generates a pulse to transducer
 const int pin_echoOut = 3;  // OutPin, Toggles high to emulate echo of pulse
@@ -35,10 +38,23 @@ void printDepth() {
   lcd.print(" m");
 }
 
+// Wraps delayMicroseconds for higher delays
+// Arduino's microseconds delay is only 14 bit length. milliseconds delay-function doesn't seem to work properly in ISR
+void us_delay(uint32_t waitTime) {
+  while (waitTime > ARDUINO_MICROSECONDS_DELAY_MAX) {
+    delayMicroseconds(ARDUINO_MICROSECONDS_DELAY_MAX);
+    waitTime -= ARDUINO_MICROSECONDS_DELAY_MAX;
+  }
+  if (waitTime > 0) {
+    delayMicroseconds(waitTime);
+  }
+}
 
 // Emulates echo to ST30
 void echoISR() {
-  delayMicroseconds(calculatedDepthDelay);
+  // Wait calculated time
+  us_delay(calculatedDepthDelay);
+
   // Toggle pin
   digitalWrite(pin_echoOut, HIGH);
   digitalWrite(pin_echoOut, LOW);
@@ -63,33 +79,27 @@ void setup() {
 void loop() {
   int x = analogRead(0);
   if (x < RIGHT_BUTTON_VAL) {
-    Serial.println("R");
     selectedRelDepth = 1;
   } else if (x < UP_BUTTON_VAL) {
-    Serial.println("U");
     selectedRelDepth = 10;
   } else if (x < DOWN_BUTTON_VAL) {
-    Serial.println("D");
     selectedRelDepth = -10;
   } else if (x < LEFT_BUTTON_VAL) {
-    Serial.println("L");
     selectedRelDepth = -1;
   } else if (x < SELECT_BUTTON_VAL) {
-    Serial.println("S");
     lcd.noBlink();
     // GO
   } else {  // Button release
     if (selectedRelDepth != 0) {
       lcd.blink();
-      Serial.println("Rel");
-
       // Ignore Over-/Underflow for now (maybe it's event convenient)
       currentDepth += selectedRelDepth;
-      calculatedDepthDelay = (currentDepth * METER_TO_DELAY) + CORRECTION;
+      calculatedDepthDelay = ((uint32_t)currentDepth * METER_TO_DELAY) + CORRECTION;
       Serial.print("New Delay for ");
       Serial.print(currentDepth);
       Serial.print(" Meters: ");
-      Serial.println(calculatedDepthDelay);
+      Serial.print(calculatedDepthDelay);
+      Serial.println(" us");
       printDepth();
     }
     selectedRelDepth = 0;
