@@ -1,5 +1,12 @@
 # ST30 Depth Transducer Mock
-This repo mocks a Transducer on a real Raymarine/Autohelm ST30 circuit board, connecting an Arduino Uno with an LCD-Keypad shield.
+This repo mocks a Transducer on a real Raymarine/Autohelm ST30 circuit board, connecting an Arduino Uno with an LCD Keypad shield.
+
+!["Arduino Uno with LCD Keypad Shield connected to ST30"](circuit.jpeg "Arduino Uno with LCD Keypad Shield connected to ST30")
+ST30 connection:
+
+* Black: Gnd
+* Red: Pulse "Ping"
+* Yellow: Sound reflection "Pong"
 
 # Why
 I work with some marine instruments which communicate via Seatalk or NMEA (see my other repos). At home I have some test equipment at home. Like this ST30. Unfortunately I have no transducer anymore. But for testing I needed to emulate some depth.
@@ -15,14 +22,14 @@ The Arduino is connected to both pins of the ST30: Ping and Pong. The Arduino re
 
 # How to connect
 This is the neat part. The Controller on the ST30 works with 5 volts. So an Arduino is ideal for that. 
-There are two pins needed to connect to the ST30: The "AGC PULSE" pin (ping, "TP65") and the pong pin ("TP87", comperator IC3c). 
-Connect the Arduino Uno's Pin 2 to the "PULSE" and Pin 3 to the "DEPTH RX" pin.
+There are two pins needed to connect to the ST30: The "AGC PULSE" pin (ping, "TP65") and the pong pin ("TP87", comparator IC3c). 
+Connect the Arduino Uno's Pin 2 to the "PULSE" and Pin 3 to the "DEPTH RX" pin. And don't forget to connect the GND pin!
 
 # Limitations
 ## Depth limitation
 I figured the maximum depth is around 175 meters. Then the previous pulse gets ignored. I guess that's just a hardware limitation.
 
 ## Button reaction on big depths
-The bigger the depth, the bigger the delay. When in the ISR (Interrupt Service Routine) the Arduino cannot execute the main loop and therefore not controll the buttons.
+The bigger the depth, the bigger the delay. When in the ISR (Interrupt Service Routine) the Arduino cannot execute the main loop and therefore not control the buttons.
 
 Since this is only for testing, I won't optimize this code for that "problem". Quick Fix: Disconnect pulse pin before selecting depth
