@@ -88,11 +88,10 @@ void loop() {
   } else if (x < LEFT_BUTTON_VAL) {
     selectedRelDepth = -1;
   } else if (x < SELECT_BUTTON_VAL) {
-    lcd.noBlink();
+    // Nothing to do
     // GO
   } else {  // Button release
     if (selectedRelDepth != 0) {
-      lcd.blink();
       // Ignore Over-/Underflow for now (maybe it's event convenient)
       currentDepth += selectedRelDepth;
       calculatedDepthDelay = ((uint32_t)currentDepth * METER_TO_DELAY) + CORRECTION;
